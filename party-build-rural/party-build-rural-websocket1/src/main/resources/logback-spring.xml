@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <property name="LOG_FILE" value="/tmp/spring.log"/>
+    <springProfile name="dev,test">
+        <property name="logLevel" value="DEBUG"/>
+    </springProfile>
+
+    <springProfile name="pro">
+        <property name="logLevel" value="INFO"/>
+    </springProfile>
+
+    <springProperty scope="context" name="serverPort" source="server.port" defaultValue="8088"/>
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="unnamed"/>
+
+    <logger name="org.springframework.web" level="${logLevel}"/>
+    <logger name="org.springframework.data.redis" level="${logLevel}"/>
+    <logger name="com.fosung.pb.ezb.activity.dao" level="${logLevel}"/>
+    <logger name="com.fosung.pb.ezb.activity.service.rpc" level="${logLevel}"/>
+
+    <appender name="rollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/tmp/dc/${appName}-%d{yyyy-MM-dd}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./logs/${appName}-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder><!-- 必须指定，否则不会往文件输出内容 -->
+            <pattern>PORT[${serverPort}]-%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n
+            </pattern>
+        </encoder>
+        <append>false</append>
+        <prudent>false</prudent>
+    </appender>
+
+    <root level="${logLevel}">
+        <appender-ref ref="rollingFileAppender"/>
+    </root>
+
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+</configuration>

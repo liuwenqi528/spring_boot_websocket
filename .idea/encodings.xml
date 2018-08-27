@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/party-build-rural" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/party-build-rural/party-build-rural-common" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/party-build-rural/party-build-rural-dto" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/party-build-rural/party-build-rural-entity" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/party-build-rural/party-build-rural-service" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/party-build-rural/party-build-rural-web" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/party-build-rural/party-build-rural-websocket1" charset="UTF-8" />
+  </component>
+</project>

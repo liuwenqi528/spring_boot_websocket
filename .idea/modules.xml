@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/party-build-rural/party-build-rural.iml" filepath="$PROJECT_DIR$/party-build-rural/party-build-rural.iml" />
+      <module fileurl="file://$PROJECT_DIR$/party-build-rural/party-build-rural-common/party-build-rural-common.iml" filepath="$PROJECT_DIR$/party-build-rural/party-build-rural-common/party-build-rural-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/party-build-rural/party-build-rural-dto/party-build-rural-dto.iml" filepath="$PROJECT_DIR$/party-build-rural/party-build-rural-dto/party-build-rural-dto.iml" />
+      <module fileurl="file://$PROJECT_DIR$/party-build-rural/party-build-rural-entity/party-build-rural-entity.iml" filepath="$PROJECT_DIR$/party-build-rural/party-build-rural-entity/party-build-rural-entity.iml" />
+      <module fileurl="file://$PROJECT_DIR$/party-build-rural/party-build-rural-service/party-build-rural-service.iml" filepath="$PROJECT_DIR$/party-build-rural/party-build-rural-service/party-build-rural-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/party-build-rural/party-build-rural-web/party-build-rural-web.iml" filepath="$PROJECT_DIR$/party-build-rural/party-build-rural-web/party-build-rural-web.iml" />
+      <module fileurl="file://$PROJECT_DIR$/party-build-rural/party-build-rural-websocket1/party-build-rural-websocket1.iml" filepath="$PROJECT_DIR$/party-build-rural/party-build-rural-websocket1/party-build-rural-websocket1.iml" />
+    </modules>
+  </component>
+</project>

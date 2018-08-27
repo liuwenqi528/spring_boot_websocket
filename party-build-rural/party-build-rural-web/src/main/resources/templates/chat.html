@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Java后端WebSocket的Tomcat实现</title>
+    <script th:fragment="outerJs" xmlns:th="http://www.springframework.org/schema/mvc" type="text/javascript"
+            th:inline="javascript">
+        /*<![CDATA[*/
+        var basePath2 = /*[[${#httpServletRequest.getScheme() + "://" + #httpServletRequest.getServerName() + ":" + #httpServletRequest.getServerPort() + #httpServletRequest.getContextPath()}]]*/;
+        var basePath = /*[[${#httpServletRequest.getServerName() + ":" + #httpServletRequest.getServerPort() + #httpServletRequest.getContextPath()}]]*/;
+        /*]]>*/
+    </script>
+    <!--<script th:src="@{https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js}"></script>-->
+    <script type="text/javascript" src="jquery-1.8.1.min.js"></script>
+    <style>
+        * {
+            margin: 0 auto;
+            padding: 0px;
+            font-size: 14px;
+            font-family: "黑体";
+        }
+
+        input, button, select, textarea {
+            outline: none;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        html {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        body {
+            horiz-align: center;
+        }
+
+        /*自定义滚动条*/
+        /*IE滚动条颜色设置*/
+        body {
+            scrollbar-arrow-color: rgb(245, 245, 245); /*上下箭头*/
+            scrollbar-track-color: rgb(245, 245, 245); /*底层背景色*/
+            scrollbar-face-color: #c2c2c2; /*滚动条前景色*/
+            scrollbar-Shadow-color: rgb(245, 245, 245); /*滚动条边线色*/
+        }
+
+        /*chrome滚动条颜色设置*/
+        *::-webkit-scrollbar {
+            width: 7px;
+            height: 0px;
+        }
+
+        /*定义滚动条高宽及背景 高宽分别对应横竖滚动条的尺寸*/
+        *::-webkit-scrollbar-track {
+            display: none;
+
+        }
+
+        /*定义滚动条轨道 内阴影+圆角*/
+        *::-webkit-scrollbar-thumb:vertical {
+            background-color: #c2c2c2;
+            border-radius: 7px;
+        }
+
+        /*自定义滚动条结束*/
+
+        #window {
+            margin-top: 100px;
+            width: 690px;
+            height: 500px;
+            border: 1px solid rgba(25, 25, 25, 0.15);
+            background-color: rgb(255, 255, 255);
+        }
+
+        #left {
+            height: 100%;
+            width: 60px;
+            background-color: rgb(42, 43, 44);
+            float: left;
+        }
+
+        #center {
+            height: 100%;
+            width: 230px;
+            background-color: rgb(231, 230, 230);
+            float: left;
+        }
+
+        #center_top {
+            height: 65px;
+            background-color: rgb(238, 234, 232);
+        }
+
+        #friends {
+            height: calc(100% - 65px);
+            overflow-y: auto;
+        }
+
+        .friend {
+            position: relative;
+            height: 65px;
+            background-color: rgb(231, 230, 230);
+        }
+
+        .friend:hover {
+            background-color: rgb(221, 219, 218);
+        }
+
+        /*选中背景颜色  199,198,197*/
+        .friend .fri_img {
+            position: absolute;
+            float: left;
+            width: 35px;
+            height: 35px;
+            top: 0;
+            bottom: 0;
+            left: 20px;
+            margin: auto;
+        }
+
+        .friend .fri_detail {
+            height: 35px;
+            width: calc(100% - 65px);
+            position: absolute;
+            float: right;
+            top: 0;
+            bottom: 0;
+            left: 65px;
+            margin: auto;
+            padding: 3px;
+            box-sizing: border-box;
+        }
+
+        #chat_window {
+            width: 400px;
+            height: 100%;
+            float: right;
+        }
+
+        #title {
+            height: 64px;
+            border-bottom: 1px solid rgb(231, 231, 231);
+            background-color: rgb(245, 245, 245);
+            padding-top: 20px;
+            padding-left: 20px;
+            box-sizing: border-box;
+        }
+
+        #toName {
+            font-size: 26px;
+        }
+
+        #chat {
+            height: 295px;
+            background-color: rgb(245, 245, 245);
+            overflow-y: auto;
+
+        }
+
+        #chat_input {
+            height: calc(100% - 361px);
+            border-top: 1px solid rgb(231, 231, 231);
+            background-color: #ffffff;
+        }
+
+        #utils, #send {
+            height: 40px;
+        }
+
+        #inp {
+            height: calc(100% - 80px);
+        }
+
+        #send > input {
+            width: 70px;
+            height: 25px;
+            background-color: rgb(245, 245, 245);
+            color: rgb(96, 96, 96);
+            border: 1px solid rgb(229, 229, 229);
+            float: right;
+            margin-right: 30px;
+            margin-top: 5px;
+        }
+
+        #send > input:hover {
+            background-color: rgb(18, 150, 17);
+            color: #ffffff;
+        }
+
+        #inp > textarea {
+            display: block;
+
+            border: none;
+        }
+
+        /*信息通用设置开始*/
+        .you_img > img, .i_img > img {
+            display: block;
+        }
+
+        .i, .you {
+            position: relative;
+            width: 100%;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
+        .i_img, .you_img {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+        }
+
+        .i_msg, .you_msg {
+            position: relative;
+            width: auto;
+            max-width: 60%;
+            min-height: 35px;
+            padding: 8px;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .right_tips, .left_tips {
+            position: absolute;
+            top: 13px;
+            width: 6px;
+            height: 6px;
+            transform: rotate(45deg);
+        }
+
+        /*信息通用设置结束*/
+        /*接收信息样式开始*/
+        .you, .you > div {
+            float: left;
+        }
+
+        .you_img {
+            left: 30px;
+        }
+
+        .you_msg {
+            border: 1px solid #ededed;
+            background-color: #fff;
+            margin-left: 75px;
+        }
+
+        .left_tips {
+            background-color: #fff;
+            border-left: 1px solid #ededed;
+            border-bottom: 1px solid #ededed;
+            left: -4px;
+        }
+
+        /*接收信息样式结束*/
+        /*发送信息样式开始*/
+        .i, .i > div {
+            float: right;
+        }
+
+        .i_img {
+            right: 30px;
+        }
+
+        .i_msg {
+            border: 1px solid #9eea6a;
+            background-color: #9eea6a;
+            margin-right: 75px;
+        }
+
+        .right_tips {
+            background-color: #9eea6a;
+            border-left: 1px solid #9eea6a;
+            border-bottom: 1px solid #9eea6a;
+            right: -4px;
+        }
+
+        /*发送信息样式结束*/
+        img {
+            height: 35px;
+            border-radius: 3px;
+        }
+
+    </style>
+    <script th:inline="javascript">
+        var user = [[${user}]]
+        var users = [[${users}]]
+        if (user == null) {
+            location.href = basePath2 + "/login";
+        }
+        var path = basePath;
+        var uid = user.id;
+        var from = uid;
+        var fromName = user.truename;
+        var to;//对方ID
+        var photo;//对方头像
+        var websocket;
+        var flag = true;
+        $(function () {
+            $(".friend").on("click", function () {
+                var toUserId = $(this).attr("id");
+                if (to != toUserId) {
+                    to = toUserId;
+                    photo = users[to].photo;
+                    $("#toName").text(users[to].truename);
+                    $(this).css({"background-color": "rgb(199,198,197)"});
+                    $(this).siblings().css({"background-color": "rgb(231, 230, 230)"});
+                    if (flag) {
+                        $("#chat_window").css({"display": "block"});
+                        flag = false;
+                    }
+                    chooseFriend(to);
+                }
+            })
+        });
+
+        function chooseFriend(toUid) {
+            if ('WebSocket' in window) {
+                websocket = new WebSocket("ws://" + path + "/webSocketServer?userId=" + uid+"&toUid="+toUid);
+            } else if ('MozWebSocket' in window) {
+                websocket = new MozWebSocket("ws://" + path + "/webSocketServer" + uid);
+            } else {
+                websocket = new SockJS("http://" + path + "/sockjs/webSocketServer" + uid);
+            }
+            websocket.onopen = function (event) {
+                console.log("WebSocket:已连接");
+                console.log(event);
+            };
+            websocket.onmessage = function (event) {
+                var data = JSON.parse(event.data);
+                console.log("WebSocket:收到一条消息", data);
+                $("#chat").append("<div class='you'><div class='you_img'><img src='" + data.photo + "'/></div><div class='you_msg'><div class='left_tips'></div>" + data.text + "</div></div>");
+                scrollToBottom();
+            };
+            websocket.onerror = function (event) {
+                console.log("WebSocket:发生错误 ");
+                console.log(event);
+            };
+            websocket.onclose = function (event) {
+                console.log("WebSocket:已关闭");
+                console.log(event);
+            }
+        }
+
+        function sendMsg() {
+            var v = $("#msg").val();
+            console.info(v.length);
+            if (v == "" || v.length == 0) {
+                return;
+            } else {
+                var data = {};
+                data["from"] = from;
+                data["fromName"] = fromName;
+                data["to"] = to;
+                data["text"] = v;
+                data["photo"] = user.photo;
+                websocket.send(JSON.stringify(data));
+                $("#chat").append("<div class='i'><div class='i_img'><img src='" + user.photo + "'/></div><div class='i_msg'><div class='right_tips'></div>" + data.text + "</div></div>");
+                scrollToBottom();
+                $("#msg").val("");
+            }
+        }
+
+        function scrollToBottom() {
+            var div = document.getElementById('chat');
+            div.scrollTop = div.scrollHeight;
+        }
+
+        Date.prototype.Format = function (fmt) { //author: meizz
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "h+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        }
+
+        function send(event) {
+            var code;
+            if (window.event) {
+                code = window.event.keyCode; // IE
+            } else {
+                code = event.which; // Firefox
+            }
+            if (code == 13) {
+                sendMsg();
+                event.preventDefault();
+            }
+        }
+    </script>
+</head>
+<body>
+<div id="window">
+    <div id="left">
+        <div style="width: 35px;margin-top: 15px;"><img th:src="@{${user.photo}}" width="35px"></div>
+    </div>
+    <div id="center">
+        <div id="center_top">
+        </div>
+        <div id="friends">
+            <div class="friend" th:each="userId,userStat : ${users}" th:unless="${userStat.current.key eq user.id }"
+                 th:id="${userStat.current.key}">
+                <div class="fri_img">
+                    <img th:src="@{${userStat.current.value.photo}}">
+                </div>
+                <div class="fri_detail">
+                    <p th:text="${userStat.current.value.truename}"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="chat_window" style="display: none">
+        <div id="title"><span id="toName"></span></div>
+        <div id="chat">
+            <!--<div class="i">-->
+            <!--<div class="i_img"><img src="photo/liuwenqi.jpg" height="35px"/></div>-->
+            <!--<div class="i_msg">-->
+            <!--<div class="right_tips"></div>-->
+            <!--你好！-->
+            <!--</div>-->
+            <!--</div>-->
+            <!--<div class="you">-->
+            <!--<div class="you_img"><img src="photo/liuwenqi.jpg" width="35px"/></div>-->
+            <!--<div class="you_msg">-->
+            <!--<div class="left_tips"></div>-->
+            <!--你好！-->
+            <!--</div>-->
+            <!--</div>-->
+        </div>
+        <div id="chat_input">
+            <div id="utils"></div>
+            <div id="inp">
+                <textarea id="msg" class="msg" onkeydown="send(event)" cols="48" rows="3" autofocus></textarea>
+            </div>
+            <div id="send">
+                <input type="button" value="发送(S)" class="send" onclick="sendMsg()">
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

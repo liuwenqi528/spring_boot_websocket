@@ -1,0 +1,13 @@
+server:
+  port: 8899
+  servlet:
+    context-path: /web-socket
+mybatis:
+  type-aliases-package: com.party.build.rural.entity
+  mapper-locations: classpath:mappers/*.xml
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/ws?serverTimezone=GMT&characterEncoding=utf8
+    username: root
+    password: mama0927
+    driver-class-name: com.mysql.jdbc.Driver

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="party-build-rural-common" />
+        <module name="party-build-rural-dto" />
+        <module name="party-build-rural-entity" />
+        <module name="party-build-rural-service" />
+        <module name="party-build-rural-web" />
+        <module name="party-build-rural-websocket1" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="group-study-websocket" target="1.8" />
+      <module name="party-build-rural" target="1.8" />
+      <module name="party-build-rural-common" target="1.8" />
+      <module name="party-build-rural-dto" target="1.8" />
+      <module name="party-build-rural-entity" target="1.8" />
+      <module name="party-build-rural-service" target="1.8" />
+      <module name="party-build-rural-web" target="1.8" />
+      <module name="party-build-rural-websocket1" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
