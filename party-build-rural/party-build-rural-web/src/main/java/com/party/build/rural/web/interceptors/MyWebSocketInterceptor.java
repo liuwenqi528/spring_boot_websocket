@@ -9,6 +9,7 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import javax.servlet.http.HttpSession;
+import java.awt.geom.QuadCurve2D;
 import java.util.Map;
 /**
  * @ClassName: MyWebSocketInterceptor
@@ -36,14 +37,17 @@ public class MyWebSocketInterceptor implements HandshakeInterceptor {
                 + "]已经建立连接");
         if (request instanceof ServletServerHttpRequest) {
             ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
-            Integer userId = Integer.parseInt(servletRequest.getServletRequest().getParameter("userId"));
-            Integer toUid = Integer.parseInt(servletRequest.getServletRequest().getParameter("toUid"));
+            String userId = servletRequest.getServletRequest().getParameter("userId");
+
+            String toUid = servletRequest.getServletRequest().getParameter("toUid");
             // 标记用户
-            if (userId != null && toUid != null) {
-                attributes.put("userId", userId);
-                attributes.put("toUid", toUid);
-            } else {
+            if (userId != null ) {
+                attributes.put("userId", Integer.parseInt(userId));
+            }else{
                 return false;
+            }
+            if(toUid != null){
+                attributes.put("toUid", Integer.parseInt(toUid));
             }
         }
         return true;

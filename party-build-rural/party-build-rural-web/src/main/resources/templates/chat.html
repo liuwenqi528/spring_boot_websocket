@@ -297,12 +297,21 @@
         var websocket;
         var flag = true;
         $(function () {
-            $(".friend").on("click", function () {
-                var toUserId = $(this).attr("id");
+            $.ajax({
+                url: basePath2 + '/msg/toOtherUser',
+                type: "post",
+                data: JSON.stringify(user),
+                dataType: "json",
+                contentType: 'application/json;charset=UTF-8',
+                success: function (data) {
+                }
+            });
+            $(document).on("click", ".friend",function () {
+                var toUserId = $(this).attr("id").substring(7);
                 if (to != toUserId) {
                     to = toUserId;
-                    photo = users[to].photo;
-                    $("#toName").text(users[to].truename);
+                    photo = $(this).find("img").attr("src");
+                    $("#toName").text($(this).find("p").text());
                     $(this).css({"background-color": "rgb(199,198,197)"});
                     $(this).siblings().css({"background-color": "rgb(231, 230, 230)"});
                     if (flag) {
@@ -313,42 +322,74 @@
                 }
             })
         });
-
+        if ('WebSocket' in window) {
+            websocket = new WebSocket("ws://" + path + "/webSocketServer?userId=" + uid);
+        }
+        // else if ('MozWebSocket' in window) {
+        //     websocket = new MozWebSocket("ws://" + path + "/webSocketServer" + uid);
+        // } else {
+        //     websocket = new SockJS("http://" + path + "/sockjs/webSocketServer" + uid);
+        // }
         function chooseFriend(toUid) {
-            if ('WebSocket' in window) {
-                websocket = new WebSocket("ws://" + path + "/webSocketServer?userId=" + uid+"&toUid="+toUid);
-            } else if ('MozWebSocket' in window) {
-                websocket = new MozWebSocket("ws://" + path + "/webSocketServer" + uid);
-            } else {
-                websocket = new SockJS("http://" + path + "/sockjs/webSocketServer" + uid);
-            }
-            websocket.onopen = function (event) {
-                console.log("WebSocket:已连接");
-                console.log(event);
-            };
-            websocket.onmessage = function (event) {
-                var data = JSON.parse(event.data);
-                console.log("WebSocket:收到一条消息", data);
+            websocket = new WebSocket("ws://" + path + "/webSocketServer?userId=" + uid + "&toUid=" + toUid);
+            $.ajax({
+                url: basePath2 + '/msg/getMessage',
+                type: "post",
+                data: {uid:uid,toUid:toUid},
+                dataType: "json",
+                success: function (data) {
+                    $("#chat").html("");
+                    $(data).each(function(){
+                        var msg = $(this)[0];
+                        var f = uid==msg.to?"you":"i";
+                        var f_img = uid==msg.to?"you_img":"i_img";
+                        var f_msg = uid==msg.to?"you_msg":"i_msg";
+                        var f_tips = uid==msg.to?"left_tips":"right_tips";
+                        $("#chat").append("<div class='"+f+"'><div class='"+f_img+"'><img src='" + msg.photo + "'/></div><div class='"+f_msg+"'><div class='"+f_tips+"'></div>" + msg.text + "</div></div>");
+                    })
+                    scrollToBottom();
+                }
+            });
+        }
+
+        websocket.onopen = function (event) {
+            console.log("WebSocket:已连接");
+            console.log(event);
+        };
+        websocket.onmessage = function (event) {
+            var data = JSON.parse(event.data);
+            console.log("WebSocket:收到一条消息", data);
+            if (data.flag == 0) {//表示消息
                 $("#chat").append("<div class='you'><div class='you_img'><img src='" + data.photo + "'/></div><div class='you_msg'><div class='left_tips'></div>" + data.text + "</div></div>");
                 scrollToBottom();
-            };
-            websocket.onerror = function (event) {
-                console.log("WebSocket:发生错误 ");
-                console.log(event);
-            };
-            websocket.onclose = function (event) {
-                console.log("WebSocket:已关闭");
-                console.log(event);
+            } else if (data.flag == 1) {//表示上线
+                var fid= "#friend_"+data.from;
+                var fri = $(fid);
+                if(data.from!=uid &&$("#friend_"+data.from).length==0){
+                    var friend = "<div class='friend' id='friend_" + data.from + "'><div class='fri_img'><img src='" + data.photo + "'></div>" +
+                        "<div class='fri_detail'><p >" + data.fromName + "</p></div></div>";
+                    $("#friends").append(friend);
+                }
+            } else if (data.flag == 2) {//表示下线
             }
+        };
+        websocket.onerror = function (event) {
+            console.log("WebSocket:发生错误 ");
+            console.log(event);
+        };
+        websocket.onclose = function (event) {
+            console.log("WebSocket:已关闭");
+            console.log(event);
         }
 
         function sendMsg() {
             var v = $("#msg").val();
-            console.info(v.length);
+
             if (v == "" || v.length == 0) {
                 return;
             } else {
                 var data = {};
+                data["flag"] = 0;
                 data["from"] = from;
                 data["fromName"] = fromName;
                 data["to"] = to;
@@ -406,7 +447,7 @@
         </div>
         <div id="friends">
             <div class="friend" th:each="userId,userStat : ${users}" th:unless="${userStat.current.key eq user.id }"
-                 th:id="${userStat.current.key}">
+                 th:id="${'friend_'+userStat.current.key}">
                 <div class="fri_img">
                     <img th:src="@{${userStat.current.value.photo}}">
                 </div>
